@@ -13,23 +13,19 @@ import numpy as np
 import math
 
 adni = pd.read_csv('../ADNI/ADNIMERGE.csv', delimiter=',')
-path = 'c:\\Users\cmartinez\Desktop\Machine Learning\Saturdays\Project\ADNI\\'
-subpath = 'ADNI1_Screening_1.5T_1'
+path = '/home/cmartinez/Projects/ADELE/Dataset/'
+subpath = 'ADNI'
 
-values = {'CN' : 'NL', 'EMCI' : 'MCI', 'LMCI' : 'MCI', 'Dementia' : 'AD', 'AD' : 'AD', 'SMC' : 4}
-
-count1 = 1
-count2 = 1
+values = {'CN' : 'NL', 'MCI' : 'MCI', 'EMCI' : 'MCI', 'LMCI' : 'MCI', 'Dementia' : 'AD', 'AD' : 'AD', 'SMC' : 4}
 
 for r, d, f in os.walk(path+subpath):
     for file in f:
-        count1 = count1+1
         if file[5:15] in pd.unique(adni['PTID']):
             if not os.path.exists(path+file[5:15]):
                 os.makedirs(path+file[5:15])
             fname = file[0:64]+'.nii'
-            os.rename(r+'\\'+file, r+'\\'+fname)
-            shtl.copy2(r+'\\'+fname, path+file[5:15])
+            #os.rename(r+'/'+file, r+'/'+fname)
+            shtl.copy2(r+'/'+file, path+file[5:15])
             rows = adni.index[adni['PTID'] == file[5:15]].tolist()
             initstate = values[adni.loc[adni.index[adni['PTID'] == file[5:15]].tolist()]['DX_bl'].tolist()[0]]
             endstate  = adni.loc[adni.index[adni['PTID'] == file[5:15]].tolist()]['DX'].tolist()
@@ -38,14 +34,16 @@ for r, d, f in os.walk(path+subpath):
                     if math.isfinite(endstate[ii]) :
                         valendstate = valendstate
                 else:
-                    valendstate = endstate[ii]
-            varnm = 'stable'+initstate+'to'+valendstate+'_'+file[5:15]+'_MPRAGE_masked_brain.nii'
-            if os.path.exists(path+file[5:15]+'\\'):
+                    valendstate = values[endstate[ii]]
+            # As my files are only MRI images, they are named as _masked_brain.nii
+            # If they were JD, they must be named as JD_masked_brain.nii
+            if initstate == valendstate:
+                varnm = 'stable'+initstate+'_'+file[5:15]+'_MPRAGE_masked_brain.nii'
+            else:
+                varnm = 'stable'+initstate+'to'+valendstate+'_'+file[5:15]+'_MPRAGE_masked_brain.nii'
+            if os.path.exists(path+file[5:15]+'/'):
                 print('PATH EXISTS')
-                os.rename(path+file[5:15]+'\\'+fname, path+file[5:15]+'\\'+varnm)
-            #print(path+file[5:15]+'\\'+f[0])  
-            #print('to')
-            #print( path+file[5:15]+'\\'+varnm)
-            count2 = count2+1
+                os.rename(path+file[5:15]+'/'+file, path+file[5:15]+'/'+varnm)
+
         else:
             print(file)
