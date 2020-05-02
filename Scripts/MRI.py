@@ -45,39 +45,31 @@ slice_2 = img_data[:,               :, center_k, 0]
 #plt.suptitle("Center slices for EPI image")  
 
 #%%
-output_file("trial2.html")
-#data = {'full': [img_data[:,:,:,0]], 'partial': [img_data[35,:,:,0].T]}
-full = img_data[:,:,:,0]
-partial = img_data[35,:,:,0]
-#zsrc = ColumnDataSource(data=dict(a=img_data[0,:,:,0]))
-zsrc = ColumnDataSource(data=dict(partial=partial, full=full))
+#output_file("trial2.html")
+
+full = np.transpose(img_data[:,:,:,0], (2,1,0))
+partial = np.transpose(img_data[35,:,:,0],(1,0))[()]
+data = {'full': [full], 'partial': [partial]}
+zsrc = ColumnDataSource(data)
 color_mapper = LinearColorMapper(bokeh.palettes.viridis(256))
 plot2 = figure(tools='', toolbar_location=None,title="Sliders example", match_aspect=True)    
-#plot2.image(image=[img_data[35,:,:,0].T], x=0, y=0, dw=nj, dh=nk, color_mapper=color_mapper)
-plot2.image('partial', source=zsrc, x=0, y=0, dw=nj, dh=nk, color_mapper=color_mapper)
+plot2.image(image='partial', source=zsrc, x=0, y=0, dw=nj, dh=nk, color_mapper=color_mapper)
 
 x_slider = Slider(start=0, end=ni, value=35, step=1, title='X')
 callback = CustomJS(args=dict(source=zsrc, xsl=x_slider),  code="""
-        const data = source.data;
-        var full = data['full']
-        var partial = data['partial']
-        var xslv = x_slider.value
-        data['partial'] = full[:,:,xslv].T
+        var data = source.data;
+        var full = data['full'][0];
+        var partial = data['partial'][0];
+        console.log('Hola')
+        var xslv = x_slider.value;
+        for (i=0; i<partial.length; i++){
+                for (j=0; j<partial[0].length; j++){
+                        partial[i][j] = full[i][j][xslv];
+                }
+        }
         source.change.emit();
 """)
 
-
-
-
-#callback = CustomJS(args=dict(source=zsrc, xsl=x_slider),
-#                        code="""
-#        var data = source.data;
-#        var full = data['full']
-#        var partial = data['partial']
-#        const xslv = xsl.value
-#        partial = full[:,:,xslv]
-#        source.change.emit();
-#    """)
     
 x_slider.js_on_change('value', callback)
 widgets = column(x_slider)
@@ -86,70 +78,5 @@ layout = column(x_slider, plot2)
 #l = grid([column(widgets, plot2)], sizing_mode='stretch_both')
 show(layout)
 
-
-
-
-#def slider(img_data):
-#    #color_mapper = LinearColorMapper(bokeh.palettes.RdBu(256))
-#    
-#    n_i, n_j, n_k, n_l = img_data.shape
-#    slice_0 = img_data[0, :, :, 0]
-#    slice_1 = img_data[:, 0, :, 0]
-#    slice_2 = img_data[:, :, 0, 0]
-#    
-#    source = ColumnDataSource(data=dict(a=img_data[:,:,:,0]))
-#
-#    plot2 = figure(tools='', toolbar_location=None,title="Sliders example", match_aspect=True)    
-#    plot2.image(image=[slice_0.T], x=0, y=0, dw=n_j, dh=n_k)
-#
-#    x_slider = Slider(start=0, end=n_i, value=0, step=1, title='X')
-#    #y_slider = Slider(start=0, end=n_j, value=0, step=1, title='Y')
-#    #z_slider = Slider(start=0, end=n_z, value=0, step=1, title='Z')
-#    
-#    callback = CustomJS(args=dict(source=source, xsl = x_slider),
-#                        code="""
-#        const data = source.data;
-#        const xslv = xsl.value
-#        
-#        data = data[xslv,:,:]
-#        source.change.emit();
-#    """)
-#    
-#    
-#    x_slider.js_on_change('value', callback)
-#    
-#    widgets = column(x_slider)
-#    return [widgets, plot2]
-#
-#    
-#    #amp_slider = Slider(start=0, end=10, value=1, step=.1, title="Amplitude")
-#    #freq_slider = Slider(start=0, end=10, value=1, step=.1, title="Frequency")
-#    #phase_slider = Slider(start=0, end=6.4, value=0, step=.1, title="Phase")
-#    #offset_slider = Slider(start=0, end=5, value=0, step=.1, title="Offset")
-#
-#
-#
-##    callback = CustomJS(args=dict(source=source, amp=amp_slider, freq=freq_slider, phase=phase_slider, offset=offset_slider),
-##                        code="""
-##        const data = source.data;
-##        const A = amp.value;
-##        const k = freq.value;
-##        const phi = phase.value;
-##        const B = offset.value;
-##        const x = data['x']
-##        const y = data['y']
-##        for (var i = 0; i < x.length; i++) {
-##            y[i] = B + A*Math.sin(k*x[i]+phi);
-##        }
-##        source.change.emit();
-##    """)
-#
-#    #amp_slider.js_on_change('value', callback)
-#    #freq_slider.js_on_change('value', callback)
-#    #phase_slider.js_on_change('value', callback)
-#    #offset_slider.js_on_change('value', callback)
-#
-#    #widgets = column(amp_slider, freq_slider, phase_slider, offset_slider)
-#    #return [widgets, plot1]
 
 

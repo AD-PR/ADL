@@ -9,29 +9,35 @@ Created on Sun Apr 19 09:39:28 2020
 from IPython import get_ipython
 get_ipython().magic('reset -sf')
 
-import sys
 import os
 import numpy as np
 import ants
 import nibabel as nib
 import matplotlib as mlib
 import matplotlib.pyplot as plt
+from deepbrain import Extractor
+#np.random.seed(123)  # for reproducibility
+#import tensorflow as tf
+
+#import keras
+#from keras.models import Sequential
+#from keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D
+#from keras.utils import np_utils
+#from tensorflow.keras.datasets import mnist
+#from tensorflow.compat.v1 import InteractiveSession
+#config = tf.compat.v1.ConfigProto()
+#config.gpu_options.allow_growth = True
+#session = tf.compat.v1.Session()
+#session = InteractiveSession(config=config)
 
 plt.close('all')
-#from nibabel.testing import data_path
-# --------------------------------------------------
-#import holoviews as hv
-#from holoviews import opts
-#hv.extension('bokeh')
-# --------------------------------------------------
 
 class PreprocessMRI:
     
     
-    def __init__(self, method = 'single', path = 'none', file = 'none', tex = True):
+    def __init__(self, method = 'single', fullfnm = 'none', tex = True):
         self.method = method
-        self.path   = path
-        self.file   = file
+        self.fullfnm = fullfnm
         
         self.tex = tex
         if self.tex==True:
@@ -43,23 +49,19 @@ class PreprocessMRI:
     def gettemplate(self):
         tmpldir = '/home/cmartinez/Projects/ADELE/Dataset/Template/'
         fnm = 'mni_icbm152_t1_tal_nlin_sym_09a.nii'
+        fnmmask = 'mni_icbm152_t1_tal_nlin_sym_09a_mask.nii'
         self.tmplimg = ants.image_read(tmpldir+fnm)
+        self.tmplimgmask = ants.image_read(tmpldir+fnmmask)
+        self.im = self.tmplimg.new_image_like(np.multiply(self.tmplimg.numpy(), self.tmplimgmask.numpy()))
         
-        return self.tmplimg
+        return self.im
         
     def getniiimages(self):
         try:
             if self.method == 'single':
-                self.niimage = nib.load(self.path+self.file)
+                self.niimage = nib.load(self.fullfnm)
                 self.niimagedata = self.niimage.get_fdata()
                 
-            elif self.method == 'full':
-                # Not working yet
-                self.niimagearray= []
-                for r, d, f in os.walk(self.path):
-                    for file in f:
-                        self.niimagearray.append(r+'/'+file)
-                #niimage =
         except:
             print('Method failed to extract niimagedata')             
     
@@ -69,27 +71,26 @@ class PreprocessMRI:
         try:
             if self.method == 'single':
                 # Working
-                self.antsimg = ants.image_read(self.path+self.file)
+                self.antsimg = ants.image_read(self.fullfnm)
                 return self.antsimg
-                
-            elif self.method == 'some':
-                # Not working yet
-                self.antsimagarray = []
-                print(self.file)
-                for f in self.file:
-                    print(f)
-                    self.antsimgarray.append(ants.image_read(self.path+f))
-                    print(self.antsimgarray)
-                    
-            elif self.method == 'full':
-                # Not working yet
-                self.imgarray = []
-                for r, d, f in os.walk(self.path):
-                    for file in f:
-                        self.niimagearray.append(r+'/'+file)
+                                    
         except:
             print('Method failed to extract antsimagedata')
             
+    
+    def get_brain_antsimg(self, ext='none'):
+        try:
+            if self.method == 'single':
+                self.antsimg = ants.image_read(self.fullfnm)
+                self.prob    = ext.run(self.antsimg.numpy())
+                self.mask    = self.prob > 0.5
+                self.tmp     = np.multiply(self.antsimg.numpy(), self.mask)
+                self.im      = self.antsimg.new_image_like(self.tmp)
+                
+                return self.im
+                
+        except:
+            print('Method failed to extract skull-stripped image')
         
     
 def show_slices(slices):
@@ -101,27 +102,68 @@ def show_slices(slices):
     
 #! -----------------------------------------------------------------
 
+tmpl = PreprocessMRI()
+imgtmpl = tmpl.gettemplate()
+#imgtmpl = x1.gettemplate()
+ext = Extractor()
 path = '/home/cmartinez/Projects/ADELE/Dataset/'
-file = 'stableAD/stableAD_002_S_0619_MPRAGE_masked_brain.nii'
-file2 = 'stableMCItoAD/stableMCItoAD_002_S_0729_MPRAGE_masked_brain.nii'
 
-x1 = PreprocessMRI(method='single', path=path, file=file)
-x2 = PreprocessMRI(method='single', path=path, file=file2)
-img1 = x1.getantsimg()
-img2 = x2.getantsimg()
-tmplimg = x1.gettemplate()
+nfiles = 1
+for r, d, f in os.walk(path):
+    for file in f:
+       nfiles += 1
 
-img2 = img2.n3_bias_field_correction( 8 ).n3_bias_field_correction( 4 )
-mask2 = ants.get_mask(img2, low_thresh = img2.mean() * 1.1, high_thresh=1e9, cleanup = 5 ).iMath_fill_holes()
-masktmpl = ants.get_mask(tmplimg, low_thresh=tmplimg.mean()*0.75, high_thresh=1e9, cleanup = 3).iMath_fill_holes()
+print('There are %d files' % nfiles)
+count = 1
+for r, d, f in os.walk(path):
+    for file in f:
+        if not os.path.exists(path+'Preprocessed'+'/'+file):
+            print('File %d out of %d' % (count, nfiles))
+            x1 = PreprocessMRI(method='single', fullfnm = r+'/'+file)
+            print(r+'/'+file)
+            img = x1.get_brain_antsimg(ext) 
+            img = img.n3_bias_field_correction( 8 ).n3_bias_field_correction( 4 )
+            t1rig = ants.registration( imgtmpl, img, "AffineFast" )
+            t1reg = ants.registration( imgtmpl, img, "ElasticSyN", initialTransform = t1rig['fwdtransforms'],
+                                  synMetric = 'CC', synSampling = 2, regIterations = (5) )
+            wrpimg = ants.apply_transforms( fixed=imgtmpl, moving=img, transformlist=t1reg['fwdtransforms'] )
+            ants.image_write(wrpimg, path+'Preprocessed'+'/'+file)
+        print('%d Files remaining' % (nfiles-count))
+        count += 1
 
-t1rig = ants.registration( tmplimg * masktmpl, img2 * mask2, "BOLDRigid" )
-t1reg = ants.registration( tmplimg * masktmpl, img2 * mask2, "ElasticSyN",
-  initialTransform = t1rig['fwdtransforms'],
-  synMetric = 'CC', synSampling = 2, regIterations = (5) )
+# file = 'stableAD_002_S_0619_MPRAGE_masked_brain.nii'
+# x1 = PreprocessMRI(method='single', fullfnm = path+'/stableAD/'+file)
+# img = x1.get_brain_antsimg(ext) 
+# ants.plot(img, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4)
+# img = img.n3_bias_field_correction( 8 ).n3_bias_field_correction( 4 )
 
-ants.plot(tmplimg, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4)
-ants.plot( tmplimg*masktmpl, t1reg['warpedfixout'] , axis=0, overlay_alpha=0.25, ncol=10, nslices=10*4 )
+# ants.plot(img, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4)
+# ants.plot(imgtmpl, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4)
+
+# t1rig = ants.registration( imgtmpl, img, "AffineFast" )
+# t1reg = ants.registration( imgtmpl, img, "ElasticSyN", initialTransform = t1rig['fwdtransforms'],
+#                       synMetric = 'CC', synSampling = 2, regIterations = (5) )
+# wrpimg = ants.apply_transforms( fixed=imgtmpl, moving=img, transformlist=t1reg['fwdtransforms'] )
+
+# ants.plot(wrpimg, axis=2, overlay_alpha=0.25, ncol=10, nslices=10*4 )
+# ants.plot(imgtmpl, wrpimg , axis=2, overlay_alpha=0.25, ncol=10, nslices=10*4 )
+
+# ants.image_write(wrpimg, path+'Preprocessed'+'/'+file)
+
+
+
+
+#img_seg = ants.atropos(a=wrpimg, x=ants.get_mask(wrpimg, low_thresh=0.01))
+#print(img_seg.keys())
+#ants.plot(img_seg['segmentation'])
+
+#mask2 = ants.get_mask(img2, low_thresh = img2.mean() * 0.75, high_thresh=1e9, cleanup = 5 ).iMath_fill_holes()
+#masktmpl = ants.get_mask(imgtmpl, low_thresh=imgtmpl.mean()*0.75, high_thresh=1e9, cleanup = 3).iMath_fill_holes()
+#ants.plot(imgtmpl*masktmpl, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4)
+#ants.plot(img2*mask2, overlay_alpha=0.5, axis=0, ncol=10, nslices=10*4) 
+
+    
+
 #img_seg = ants.atropos(a=img2, m='[0.2,1x1]', c='[2,0]', 
 #                        i='kmeans[3]', x=mask)
 #print(img_seg.keys())
