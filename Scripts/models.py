@@ -6,14 +6,16 @@ Created on Fri May  1 13:53:44 2020
 """
 
 import numpy as np
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Conv3D, MaxPooling3D, Dropout, BatchNormalization, ELU
-from keras.layers import Reshape, Dense, Flatten, Lambda
-from keras.optimizers import Adam
-from keras import regularizers
-from keras import backend as K
-from triplet_loss import TripletLossLayer, LossLessTripletLossLayer, SampleTripletBatch
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Conv3D, MaxPooling3D, Dropout, BatchNormalization, ELU
+from tensorflow.keras.layers import Dense, Flatten, Lambda
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras import regularizers
+import tensorflow_addons as tfa
+from sklearn.manifold import TSNE
+from plotters import scatter_clusters
 
 
 class Parameters():
@@ -63,41 +65,25 @@ class FeatureExtractor3D():
         flat7 = Flatten()(convb6)
         den8 = Dense(self.embeddingsize, activation=None, kernel_regularizer=self.params.w_regularizer, 
                      kernel_initializer='he_uniform')(flat7)
-        norm_layer = Lambda(lambda x: K.l2_normalize(x,axis=-1))(den8)
+        norm_layer = Lambda(lambda x: tf.math.l2_normalize(x,axis=-1))(den8)
         self.model = Model(inputs=self.mri, outputs=norm_layer)
     
-    def train_tiplet_loss(self, train_X, train_Y):
+    def train_tiplet_loss(self, train_X, train_Y, plot = True):
         
-        #1-Declare anchor, positive and negative inputs layers and embeddings
-        a_inp = Input (shape = (self.params.image_shape))
-        p_inp = Input (shape = (self.params.image_shape))
-        n_inp = Input (shape = (self.params.image_shape))
+        optimizer = Adam(lr=0e-3) 
+        self.model.compile(loss=tfa.losses.TripletSemiHardLoss(), optimizer=optimizer)
         
-        a_embed = self.model(a_inp)
-        p_embed = self.model(p_inp)
-        n_embed = self.model(n_inp)
+        history = self.model.fit(train_X, train_Y, batch_size=self.params.batch_size, 
+                                 epochs=self.params.epochs, verbose=1)
         
-        #2-Wrap the a,n,p embeddings with a final Triplet Loss Layer
-        triplet_loss_layer = TripletLossLayer(alpha=0.2, name='triplet_loss_layer')([a_embed, p_embed, n_embed])
-        #triplet_loss_layer = LossLessTripletLossLayer(N=self.embeddingsize, 
-        #                                              beta=self.embeddingsize, 
-        #                                              epsilon=1e-8, name='losslesstriplet_loss_layer')([a_embed, p_embed, n_embed])
+        embeddings = self.model.predict(train_X)
+        projections =  TSNE(n_components=2).fit_transform(embeddings)
         
-        #3- A final model that can be trained
-        self.triplet_model = Model(inputs=[a_inp, p_inp, n_inp], outputs=triplet_loss_layer)
-        self.triplet_model.compile(loss=None, optimizer='adam')
+        if plot == True: scatter_clusters(projections, train_Y, "Training Data Clusters")
         
-        #4-get_triplets from the data
-        sample_size = int(len(train_Y)/3)
-        #sample_size is set to 1/3 of training size (better for training), but
-        #could be the whole train set (sample_size = len(train_Y))
-        batches = SampleTripletBatch(batch_size=self.params.batch_size, P=sample_size)
-        triplets = batches.get_hard_batch(self.model, train_X, train_Y)
-        a = np.array(triplets[0])
-        p = np.array(triplets[1])
-        n = np.array(triplets[2])
-        
-        self.triplet_model.fit([a, p, n], None, epochs=50, batch_size=batch_size, verbose=1)
+        return history.history
+    
+    
         
     
         
@@ -128,7 +114,7 @@ if __name__ == "__main__":
     drop_rate = 0.1
     w_regularizer = regularizers.l2(5e-5)
     batch_size = 20
-    embedding_size = 100
+    embedding_size = 200
     #resolution
     width = 197
     high = 233
@@ -142,8 +128,8 @@ if __name__ == "__main__":
     
     params = Parameters(params_dict)
     extractor = FeatureExtractor3D(params, embedding_size)
-    extractor.train_tiplet_loss()
-    extractor.triplet_model.summary()
+    extractor.model.summary()
+    #The we could call train triplet loss with a Train_X, Train_Y data
     
         
         
