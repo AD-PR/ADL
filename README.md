@@ -2,12 +2,10 @@
 
 Authors: 
 
-Cayetano Martínez-Muriel
-
-Carlos Morales Bartolomé
-
+Cayetano Martínez-Muriel<br/>
+Carlos Morales Bartolomé<br/>
 Carlos Sanmiguel Vila
 
 
-Project for Alzheimer Disease prognosis, based on Deep Learning NN.
+Project for Alzheimer Disease prognosis, based on Deep Learning NN.<br/>
 MRI Images obtained from ADNI repository: http://adni.loni.usc.edu/
