@@ -1,5 +1,4 @@
 
-
 import numpy as np
 import pandas as pd
 from collections import Counter
@@ -23,6 +22,9 @@ indx = np.where((labels!="mni") & (labels!="stableMCItoNL") & (labels!="stableAD
 data_X = images[:,:,:,indx[0]]
 data_Y = labels[indx]
 
+#Borrar variables que ya no sirven
+del images, labels
+
 #Enconding String Labels into One Hot Encoder
 
 encoder = LabelEncoder()
@@ -36,33 +38,41 @@ print("Codificación One Hot: ", label_map)
 data_X = np.moveaxis(data_X, 3, -4) #bring instance axis to the first index
 data_X = data_X.astype('float32')
 #maxmin normalization
-x_min = data_X.min(axis=(1, 2, 3), keepdims=True)
-x_max = data_X.max(axis=(1, 2, 3), keepdims=True)
-data_X = (data_X - x_min)/(x_max-x_min)
+#x_min = data_X.min(axis=(1, 2, 3), keepdims=True)
+#x_max = data_X.max(axis=(1, 2, 3), keepdims=True)
+#data_X = (data_X - x_min)/(x_max-x_min)
 #standard normalization
-#data_X -= data_X.mean(axis=(1, 2, 3), keepdims=True)
-#data_X /= data_X.std(axis=(1, 2, 3), keepdims=True)
+data_X -= data_X.mean(axis=(1, 2, 3), keepdims=True)
+data_X /= data_X.std(axis=(1, 2, 3), keepdims=True)
+
+#In case only processing 2 classes:
+data_Y_encoded = np.where(data_Y_encoded==2,0,data_Y_encoded)
+data_Y_encoded = np.where(data_Y_encoded==3,1,data_Y_encoded)
 
 #adding the channel last
 data_X = np.array((data_X,))
 data_X = np.moveaxis(data_X, 0, -1)
 X_train, X_test, Y_train, Y_test = train_test_split(data_X, data_Y_encoded, test_size=0.3, 
                                                     random_state=42, shuffle=True)
+del data_X, data_Y, data_Y_encoded
 
 
 #Training Parameters
 drop_rate = 0.1
-w_regularizer = regularizers.l2(5e-5)
-batch_size = 21
-epochs = 50
-embedding_size = 200
-width = data_X.shape[1]
-high = data_X.shape[2]
-depth = data_X.shape[3]
+w_regularizer = regularizers.l2(0.01)
+batch_size = 12
+epochs = 20
+embedding_size = 100
+width = X_train.shape[1]
+high = X_train.shape[2]
+depth = X_train.shape[3]
 channels = 1 #Black and white
+validation = False
+val_size = 0.2
 params_dict = { 'w_regularizer': w_regularizer, 'batch_size': batch_size,
                'drop_rate': drop_rate, 'epochs': epochs, 
-               'image_shape': (width, high, depth, channels)}
+               'image_shape': (width, high, depth, channels),
+               'validation': validation, 'val_size': val_size}
 params = Parameters(params_dict)
 
 
