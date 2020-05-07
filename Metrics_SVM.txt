@@ -1,0 +1,16 @@
+
+
+Train Size = 403
+Val Size = 30
+Test Size = 143
+
+Classificattion Acuraccy 
+
+
+- Epoch 400 --> Train = 0.541 ; Val = 0.533; Test = 0.524
+- Epoch 500 --> Train = 0.955 ; Val = 0.701; Test = 0.636
+- Epoch 550 --> Train = 0.993 ; Val = 0.733; Test = 0.671
+
+
+
+
