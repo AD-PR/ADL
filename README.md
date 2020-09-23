@@ -6,6 +6,8 @@
 
 A Deep Learning approach for Alzheimer Disease early diagnosis and prognosis, relying only on non-invasive procedures - structural MRIs and clinical data of the subjects.
 
+Early detection is essential in a disease that has a developmental period of 20 years until it presents a clear symptomatology. This model focuses only on the initial data (year 0) of patients who after several years (up to 20) developed the disease (AD) or remained healthy (HC).
+
 This project aims to be a significant step-up in the Alzheimer prognosis field, a valuable support tool for medical professionals and a generalist research line for neurodegenerative diseases
 
 Medium Article HERE
