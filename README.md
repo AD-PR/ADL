@@ -32,7 +32,7 @@ Therefore, a strategy of parametric efficiency is followed, with the objective o
 
 1. Residual connections to preserve variability
 2. Custom Separable 3D Convolutional layers (far less parameters than normal 3DConv)
-3. Few Shot Learnig strategy: Triplet Semi Hard Loss (clustering)
+3. Few Shot Learning strategy: Triplet Semi Hard Loss (clustering)
 
 ![ADPR Scheme](/figures/AD_PR_Scheme.png)
 
