@@ -96,9 +96,9 @@ class AlzheimerModel():
         else:
             
             if self.params.validation:
-                X_img, X_img_val, Y_img, Y_img_val = train_test_split(X_img, Y_img,
-                                                                      test_size=self.params.val_size,
-                                                                      random_state=42, shuffle=True)
+                #X_img, X_img_val, Y_img, Y_img_val = train_test_split(X_img, Y_img,
+                #                                                      test_size=self.params.val_size,
+                #                                                      random_state=42, shuffle=True)
                 generator_val = CustomGeneratorImg(X_img_val, Y_img_val, self.params.batch_size)
             
             generator_train = CustomGeneratorImg(X_img, Y_img, self.params.batch_size)
