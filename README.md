@@ -54,10 +54,14 @@ Exploring other alternatives and with room for improvement, any contribution wil
 
 Authors:
 
-**Cayetano Martínez-Muriel**: https://github.com/cayetanomarmur<br/>
-**Carlos Morales Bartolomé**: https://github.com/CarlosMoralesB <br/>
-**Carlos Sanmiguel Vila**: https://github.com/sanmi90
+**Cayetano Martínez-Muriel**: https://www.linkedin.com/in/cmartinezmuriel/<br/>
+**Carlos Morales Bartolomé**: https://www.linkedin.com/in/carlos-morales-bartolome/ <br/>
+**Carlos Sanmiguel Vila**: https://www.linkedin.com/in/carlos-sanmiguel-vila/
 
-
-MRI 3D Images and clinical data obtained from [ADNI repository](http://adni.loni.usc.edu/)<br/>
 Project developed within the framework of [Saturdays AI](https://www.saturdays.ai/) (Madrid, Spain, 3rd Edition): https://github.com/SaturdaysAI
+
+## References
+
+[Spasov et al.](https://github.com/simeon-spasov/MCI) (2019). A parameter-efficient deep learning approach to predict conversion from mild cognitive impairment to Alzheimer's disease. Neuroimage, 189, 276-287.
+
+Data collection and sharing for this project was funded by the [Alzheimer's Disease Neuroimaging Initiative (ADNI)](http://adni.loni.usc.edu/)(National Institutes of Health Grant U01 AG024904) and DOD ADNI (Department of Defense award number W81XWH-12-2-0012).
