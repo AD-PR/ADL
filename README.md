@@ -38,15 +38,15 @@ Therefore, a strategy of parametric efficiency is followed, with the objective o
 
 The following table shows the current metrics of this binary classification, revealing close to state-of-the-art accuracy.
 
-METRIC | MRI + CLINICAL DATA | MRI 
+METRIC | MRI + CLINICAL DATA | MRI (NO CLINICAL DATA)
 ------------ | ------------- | -------------
-Train Accuracy | 0.867 | 0.867
-Val Accuracy | 0.782 | 0.782
-**Test Accuracy** | **0.794** | **0.794**
-Sensitivity | 0.866 | 0.
-Specificity | 0.736 | 0.
-False Positive Rate | 0.263 | 0.
-**False Negative Rate** | **0.133** | **0.**
+Train Accuracy | 0.867 | 0.725
+Val Accuracy | 0.782 | 0.551
+**Test Accuracy** | **0.794** | **0.617**
+Sensitivity | 0.866 | 0.800
+Specificity | 0.736 | 0.473
+False Positive Rate | 0.263 | 0.526
+**False Negative Rate** | **0.133** | **0.199**
 
 Exploring other alternatives and with room for improvement, any contribution will be welcome.
 
