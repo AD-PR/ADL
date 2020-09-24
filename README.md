@@ -1,6 +1,6 @@
 ![ADPR Logo](/figures/logo_ADPR.PNG)
 
-# Alzheimer Disease Prognosis (AD-PR) 
+# Alzheimer's Disease Prognosis (AD-PR) 
 
 **[Saturdays AI](https://www.saturdays.ai/) 3rd Edition**
 
@@ -10,7 +10,7 @@ Early detection is essential in a disease that has a developmental period of 20 
 
 This project aims to be a significant step-up in the Alzheimer prognosis field, a valuable support tool for medical professionals and a generalist research line for neurodegenerative diseases
 
-Medium Article HERE
+Check **[Deep-Learning based tool for prognosis of Alzheimer](https://medium.com/saturdays-ai/deep-learning-based-tool-for-prognosis-of-alzheimer-850b105d000b/)** article for full details on the code and the strategy followed.
 
 ## Overview
 
