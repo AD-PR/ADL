@@ -1,4 +1,4 @@
-![ADPR Logo](/figures/logo_ADPR.PNG)
+![ADPR Logo](/figures/logo_ADPR.png)
 
 # Alzheimer's Disease Prognosis (AD-PR) 
 
