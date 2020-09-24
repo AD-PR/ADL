@@ -4,7 +4,7 @@
 
 **[Saturdays AI](https://www.saturdays.ai/) 3rd Edition**
 
-A Deep Learning approach for Alzheimer Disease early diagnosis and prognosis, relying only on non-invasive procedures - structural MRIs and clinical data of the subjects.
+A Deep Learning approach for Alzheimer's Disease early diagnosis and prognosis, relying only on non-invasive procedures - structural MRIs and clinical data of the subjects.
 
 Early detection is essential in a disease that has a developmental period of 20 years until it presents a clear symptomatology. This model focuses only on the initial data (year 0) of patients who after several years (up to 20) developed the disease (AD) or remained healthy (HC).
 
@@ -14,7 +14,7 @@ Check **[Deep-Learning based tool for prognosis of Alzheimer](https://medium.com
 
 ## Overview
 
-This repository provides the experimentation code for Alzheimer Disease risk vs Healthy state binary prediction. All scripts can be found at the folder "Scripts", under the following structure:
+This repository provides the experimentation code for Alzheimer's Disease risk vs Healthy state binary prediction. All scripts can be found at the folder "Scripts", under the following structure:
 
 * main.py is an example to allow running the full model.
 * "Preprocessing" folder contains the code needed to:
